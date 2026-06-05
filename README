@@ -1,0 +1,119 @@
+# Auth0 Application Manager
+
+Small terminal CLI for creating, updating, and deleting Auth0 applications through
+the Auth0 Management API.
+
+Auth0 dashboard "Applications" are called `clients` in the Management API.
+
+## Setup
+
+Use Python 3.10 or newer. The script only uses the Python standard library.
+
+Create or use a machine-to-machine application in Auth0 that is authorized for
+the Auth0 Management API with the scopes you need:
+
+- `create:clients`
+- `update:clients`
+- `delete:clients`
+
+Then export credentials:
+
+```bash
+export AUTH0_DOMAIN="your-tenant.us.auth0.com"
+export AUTH0_CLIENT_ID="your_machine_to_machine_client_id"
+export AUTH0_CLIENT_SECRET="your_machine_to_machine_client_secret"
+```
+
+Alternatively, provide an existing Management API token:
+
+```bash
+export AUTH0_DOMAIN="your-tenant.us.auth0.com"
+export AUTH0_MGMT_API_TOKEN="your_management_api_access_token"
+```
+
+## Examples
+
+Create a regular web application:
+
+```bash
+python3 auth0_apps.py create \
+  --name "Example Web App" \
+  --app-type regular_web \
+  --callbacks "http://localhost:3000/callback" \
+  --allowed-logout-urls "http://localhost:3000" \
+  --web-origins "http://localhost:3000"
+```
+
+Create with a JSON payload:
+
+```bash
+python3 auth0_apps.py create --json @payload.json
+```
+
+Create a machine-to-machine application:
+
+```bash
+python3 auth0_apps.py create \
+  --name "Example M2M App" \
+  --app-type mtom \
+  --token-endpoint-auth-method client_secret_post
+```
+
+Update an application:
+
+```bash
+python3 auth0_apps.py update YOUR_AUTH0_CLIENT_ID \
+  --name "Renamed Web App" \
+  --callbacks "http://localhost:3000/callback,https://app.example.com/callback"
+```
+
+Update fields other than the name:
+
+```bash
+python3 auth0_apps.py update YOUR_AUTH0_CLIENT_ID \
+  --description "Updated local development app" \
+  --callbacks "http://localhost:3000/callback,https://app.example.com/callback" \
+  --allowed-logout-urls "http://localhost:3000,https://app.example.com" \
+  --web-origins "http://localhost:3000,https://app.example.com"
+```
+
+The `update` command supports these fields directly:
+
+- `--name`
+- `--description`
+- `--app-type`
+- `--callbacks`
+- `--allowed-logout-urls`
+- `--web-origins`
+- `--allowed-origins`
+- `--token-endpoint-auth-method`
+- `--client-metadata`
+- `--jwt-configuration`
+
+For Auth0 application fields that do not have a named flag, pass a JSON object:
+
+```bash
+python3 auth0_apps.py update YOUR_AUTH0_CLIENT_ID \
+  --json '{"logo_uri":"https://example.com/logo.png"}'
+```
+
+Or use a file:
+
+```bash
+python3 auth0_apps.py update YOUR_AUTH0_CLIENT_ID --json @payload.json
+```
+
+Updates are sent with Auth0's `PATCH /api/v2/clients/{id}` endpoint, so only
+the fields you provide are changed.
+
+Delete an application:
+
+```bash
+python3 auth0_apps.py delete YOUR_AUTH0_CLIENT_ID
+```
+
+Skip the delete confirmation prompt:
+
+```bash
+python3 auth0_apps.py delete YOUR_AUTH0_CLIENT_ID --yes
+```
